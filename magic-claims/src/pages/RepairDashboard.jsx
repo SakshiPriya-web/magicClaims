@@ -21,7 +21,7 @@ export default function RepairDashboard() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
 
-  const repairShopId = "51b02a49-425c-4817-b2fc-366415b65182";
+  const repairShopId = "shop_test";
 
   // ---- Fetch all claims ----
   async function fetchClaims() {

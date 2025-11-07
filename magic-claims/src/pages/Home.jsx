@@ -13,7 +13,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
 
   const BASE_URL = "https://invoice-parser-production-4123.up.railway.app";
-  const customer_id = "751c2d59-449a-498a-8d81-de72b1d39cfc";
+  const customer_id = "cust_test";
 
   useEffect(() => {
     async function fetchVehicles() {

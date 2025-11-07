@@ -13,9 +13,9 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const BASE_URL = "https://invoice-parser-production-4123.up.railway.app";
-const CUSTOMER_ID = "751c2d59-449a-498a-8d81-de72b1d39cfc";
-const DEFAULT_REPAIR_SHOP_ID = "51b02a49-425c-4817-b2fc-366415b65182";
-const UPLOADED_BY_USER_ID = 6;
+const CUSTOMER_ID = "cust_test";
+const DEFAULT_REPAIR_SHOP_ID = "shop_test";
+const UPLOADED_BY_USER_ID = 1;
 const DEFAULT_CLAIM_AMOUNT = 0;
 
 const ReportDamage = () => {
