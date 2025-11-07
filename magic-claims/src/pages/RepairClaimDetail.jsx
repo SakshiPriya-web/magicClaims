@@ -25,7 +25,7 @@ export default function RepairClaimDetail() {
   const [loading, setLoading] = useState(!state?.claim);
   const fileInputRef = useRef(null);
 
-  const repairShopId = "51b02a49-425c-4817-b2fc-366415b65182";
+  const repairShopId = "shop_test";
 
   // ---- Fetch ALL details for the clicked card (from claimuploadstobedone) ----
   useEffect(() => {
