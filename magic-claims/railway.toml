@@ -1,6 +1,0 @@
-[build]
-root = "magic-claims"
-
-[deploy]
-buildCommand = "npm ci && npm run build"
-startCommand = "npm run start"
