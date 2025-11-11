@@ -7,7 +7,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import AdminClaimDetail from "./pages/AdminClaimDetail.jsx";
 import NotFound from "./pages/NotFound";
-import InvoiceDetail from "./pages/InvoiceDetail";
+// import InvoiceDetail from "./pages/InvoiceDetail";
 
 const queryClient = new QueryClient();
 
@@ -22,10 +22,10 @@ const App = () => (
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/claims/:claimId" element={<AdminClaimDetail />} />
-          <Route
+          {/* <Route
             path="/repair/invoice/:repairShopId/:invoiceId"
             element={<InvoiceDetail />}
-          />
+          /> */}
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

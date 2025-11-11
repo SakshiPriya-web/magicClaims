@@ -109,3 +109,28 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+@layer utilities {
+  /* compact page width */
+  .page { @apply mx-auto w-full max-w-[950px] px-4; }
+
+  /* KPI: equal height, centered */
+  .kpi-card { @apply h-28 flex flex-col items-center justify-center gap-1; }
+
+  /* Claims row grid (col1 flex, rest fixed) */
+  .claims-row {
+    display: grid; gap: 1rem; /* gap-4 */
+    grid-template-columns: 1fr; /* mobile */
+  }
+  @media (min-width: 1024px) { /* lg */
+    .claims-row { grid-template-columns: minmax(360px,1fr) 220px 260px 200px; }
+  }
+
+  /* Thumbs & invoice preview */
+  .thumb { @apply aspect-square bg-muted rounded overflow-hidden; }
+  .invoice-frame { @apply rounded border overflow-hidden; height: 120px; }
+  .col-title { @apply text-sm text-muted-foreground mb-2; }
+
+  /* Right column: stack, but align nicely */
+  .actions-col { @apply flex flex-col justify-start gap-3; }
+}
+

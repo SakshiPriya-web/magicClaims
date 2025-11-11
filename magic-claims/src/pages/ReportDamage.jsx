@@ -16,7 +16,6 @@ const BASE_URL = "https://invoice-parser-production-4123.up.railway.app";
 const CUSTOMER_ID = "cust_test";
 const DEFAULT_REPAIR_SHOP_ID = "shop_test";
 const UPLOADED_BY_USER_ID = 1;
-const DEFAULT_CLAIM_AMOUNT = 0;
 
 const ReportDamage = () => {
   const navigate = useNavigate();
@@ -36,6 +35,7 @@ const ReportDamage = () => {
   const [incidentDate, setIncidentDate] = useState(null);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
+  const [claimAmount, setClaimAmount] = useState(""); // ← NEW
   const [images, setImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -143,15 +143,21 @@ const ReportDamage = () => {
       toast.error("Please upload at least one damage photo");
       return;
     }
+    // NEW: claim amount validation
+    const amt = Number(claimAmount);
+    if (!claimAmount || Number.isNaN(amt) || amt <= 0) {
+      toast.error("Please enter a valid claim amount (greater than 0).");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
 
       const formData = new FormData();
-      formData.append("policy_id", activePolicy.policy_id); // ✅ dynamic from API
+      formData.append("policy_id", activePolicy.policy_id);
       formData.append("date_of_incident", format(incidentDate, "yyyy-MM-dd"));
       formData.append("description", description);
-      formData.append("claim_amount", DEFAULT_CLAIM_AMOUNT);
+      formData.append("claim_amount", amt); // ← use user-entered amount
       formData.append("uploaded_by_user_id", UPLOADED_BY_USER_ID);
       formData.append("repair_shop_id_done", repairShopId);
 
@@ -190,7 +196,7 @@ const ReportDamage = () => {
   const fmt = useMemo(
     () => ({
       date: (d) => (d ? new Date(d).toLocaleDateString() : "—"),
-      money: (n) => (typeof n === "number" ? `₹${n.toLocaleString()}` : "—"),
+      money: (n) => (typeof n === "number" ? `$${n.toLocaleString()}` : "—"),
     }),
     []
   );
@@ -217,7 +223,7 @@ const ReportDamage = () => {
 
       {/* Body */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Vehicle summary (unchanged styling) */}
+        {/* Vehicle summary */}
         <Card className="mb-6 border-primary/20 bg-primary/5">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
@@ -270,7 +276,7 @@ const ReportDamage = () => {
           </CardContent>
         </Card>
 
-        {/* Active Policy summary (same design language) */}
+        {/* Active Policy summary */}
         <Card className="mb-6 border-indigo-200 bg-white">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -299,157 +305,176 @@ const ReportDamage = () => {
           </CardContent>
         </Card>
 
-        {/* Report form (unchanged UI) */}
+        {/* Report form */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl">Report Vehicle Damage</CardTitle>
             <CardDescription>Fill in the incident details and upload supporting photos</CardDescription>
           </CardHeader>
 
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Date */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label>Incident Date *</Label>
-                <Calendar
-                  mode="single"
-                  selected={incidentDate}
-                  onSelect={setIncidentDate}
-                  initialFocus
-                  className="p-2 border rounded shadow bg-white"
-                  disabled={(date) => date > new Date()}
-                />
-              </div>
-              <div></div>
-            </div>
-
-            {/* Repair Shop ID */}
-            <div>
-              <Label htmlFor="repairShopId">Repair Shop ID *</Label>
-              <Input
-                id="repairShopId"
-                placeholder="Enter or confirm Repair Shop ID"
-                value={repairShopId}
-                onChange={(e) => setRepairShopId(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Location */}
-            <div>
-              <Label htmlFor="location">Incident Location *</Label>
-              <Input
-                id="location"
-                placeholder="e.g., 123 Main Street, City"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe what happened..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                rows={4}
-              />
-            </div>
-
-            {/* Upload photos */}
-            <div className="space-y-4">
-              <div>
-                <Label>Damage Photos *</Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Upload clear photos of all damaged areas.
-                </p>
-              </div>
-
-              <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="cursor-pointer flex flex-col items-center gap-2"
-                >
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <Upload className="w-8 h-8 text-primary" />
-                  </div>
-                  <p className="font-medium">Click to upload images</p>
-                  <p className="text-sm text-muted-foreground">
-                    PNG, JPG up to 10MB each
-                  </p>
-                </label>
-              </div>
-
-              {images.length > 0 && (
-                <div className="space-y-4">
-                  {images.map((image) => (
-                    <Card key={image.id}>
-                      <div className="flex flex-col md:flex-row gap-4 p-4">
-                        <div className="relative w-full md:w-48 h-48">
-                          <img
-                            src={image.preview}
-                            alt="Damage"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(image.id)}
-                            className="absolute top-2 right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <Label htmlFor={`desc-${image.id}`}>Photo Description</Label>
-                          <Textarea
-                            id={`desc-${image.id}`}
-                            placeholder="Describe this photo..."
-                            value={image.description}
-                            onChange={(e) => updateImageDescription(image.id, e.target.value)}
-                            rows={5}
-                          />
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Date */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Incident Date *</Label>
+                  <Calendar
+                    mode="single"
+                    selected={incidentDate}
+                    onSelect={setIncidentDate}
+                    initialFocus
+                    className="p-2 border rounded shadow bg-white"
+                    disabled={(date) => date > new Date()}
+                  />
                 </div>
-              )}
-            </div>
 
-            {/* Buttons */}
-            <div className="flex gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  if (window.confirm("Cancel report? All data will be lost.")) {
-                    navigate("/home");
-                  }
-                }}
-              >
-                Cancel
-              </Button>
+                {/* Claim Amount (NEW) */}
+                <div>
+                  <Label htmlFor="claimAmount">Claim Amount *</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">$</span>
+                    <Input
+                      id="claimAmount"
+                      type="number"
+                      inputMode="decimal"
+                      min="1"
+                      step="1"
+                      placeholder="Enter claim amount"
+                      value={claimAmount}
+                      onChange={(e) => setClaimAmount(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Enter the total amount you’re claiming.</p>
+                </div>
+              </div>
 
-              <Button type="submit" className="flex-1 h-11" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit Claim"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
+              {/* Repair Shop ID */}
+              <div>
+                <Label htmlFor="repairShopId">Repair Shop ID *</Label>
+                <Input
+                  id="repairShopId"
+                  placeholder="Enter or confirm Repair Shop ID"
+                  value={repairShopId}
+                  onChange={(e) => setRepairShopId(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <Label htmlFor="location">Incident Location *</Label>
+                <Input
+                  id="location"
+                  placeholder="e.g., 123 Main Street, City"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe what happened..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  rows={4}
+                />
+              </div>
+
+              {/* Upload photos */}
+              <div className="space-y-4">
+                <div>
+                  <Label>Damage Photos *</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Upload clear photos of all damaged areas.
+                  </p>
+                </div>
+
+                <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <Upload className="w-8 h-8 text-primary" />
+                    </div>
+                    <p className="font-medium">Click to upload images</p>
+                    <p className="text-sm text-muted-foreground">
+                      PNG, JPG up to 10MB each
+                    </p>
+                  </label>
+                </div>
+
+                {images.length > 0 && (
+                  <div className="space-y-4">
+                    {images.map((image) => (
+                      <Card key={image.id}>
+                        <div className="flex flex-col md:flex-row gap-4 p-4">
+                          <div className="relative w-full md:w-48 h-48">
+                            <img
+                              src={image.preview}
+                              alt="Damage"
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(image.id)}
+                              className="absolute top-2 right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <Label htmlFor={`desc-${image.id}`}>Photo Description</Label>
+                            <Textarea
+                              id={`desc-${image.id}`}
+                              placeholder="Describe this photo..."
+                              value={image.description}
+                              onChange={(e) => updateImageDescription(image.id, e.target.value)}
+                              rows={5}
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    if (window.confirm("Cancel report? All data will be lost.")) {
+                      navigate("/home");
+                    }
+                  }}
+                >
+                  Cancel
+                </Button>
+
+                <Button type="submit" className="flex-1 h-11" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Claim"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
         </Card>
       </div>
     </div>

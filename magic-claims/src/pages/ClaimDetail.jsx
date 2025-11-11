@@ -50,7 +50,10 @@ const buildMediaUrl = (p) => {
   if (!p) return "";
   if (/^https?:\/\//i.test(p)) return p; // already absolute (legacy)
   // normalize legacy prefixes
-  const rel = p.replace(/^claims\//, "").replace(/^claims-media\//, "").replace(/^\/+/, "");
+  const rel = p
+    .replace(/^claims\//, "")
+    .replace(/^claims-media\//, "")
+    .replace(/^\/+/, "");
   return `${SUPABASE_BUCKET_URL}/${rel}`;
 };
 
@@ -85,7 +88,8 @@ export default function ClaimDetail() {
           signal: controller.signal,
         });
         const [claimData, ...rest] = data || [];
-        const mediaFiles = rest?.filter((r) => r?.media_id && !r?.is_deleted) || [];
+        const mediaFiles =
+          rest?.filter((r) => r?.media_id && !r?.is_deleted) || [];
         const vehicleData = rest?.find((r) => r?.car_id) || null;
 
         setClaim(claimData || null);
@@ -94,7 +98,9 @@ export default function ClaimDetail() {
 
         setForm({
           date_of_incident: claimData?.date_of_incident || "",
-          incident_time: claimData?.incident_time ? fmt.time(claimData.incident_time) : "",
+          incident_time: claimData?.incident_time
+            ? fmt.time(claimData.incident_time)
+            : "",
           incident_location: claimData?.incident_location || "",
           description: claimData?.description || "",
         });
@@ -131,7 +137,9 @@ export default function ClaimDetail() {
 
   const toggleDelete = (mediaId) => {
     setMarkedForDelete((prev) =>
-      prev.includes(mediaId) ? prev.filter((m) => m !== mediaId) : [...prev, mediaId]
+      prev.includes(mediaId)
+        ? prev.filter((m) => m !== mediaId)
+        : [...prev, mediaId]
     );
   };
 
@@ -150,20 +158,26 @@ export default function ClaimDetail() {
   useEffect(() => {
     return () => {
       newFiles.forEach((f) => {
-        try { URL.revokeObjectURL(f.preview); } catch {}
+        try {
+          URL.revokeObjectURL(f.preview);
+        } catch {}
       });
     };
   }, [newFiles]);
 
   const onChangeNewDesc = (id, desc) => {
-    setNewFiles((prev) => prev.map((f) => (f.id === id ? { ...f, description: desc } : f)));
+    setNewFiles((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, description: desc } : f))
+    );
   };
 
   const removeNewFile = (id) => {
     setNewFiles((prev) => {
       const target = prev.find((f) => f.id === id);
       if (target) {
-        try { URL.revokeObjectURL(target.preview); } catch {}
+        try {
+          URL.revokeObjectURL(target.preview);
+        } catch {}
       }
       return prev.filter((f) => f.id !== id);
     });
@@ -198,14 +212,17 @@ export default function ClaimDetail() {
       // 1) Delete marked photos first via DELETE /photos/{media_id}
       if (markedForDelete?.length) {
         await Promise.all(
-          markedForDelete.map((mid) => axios.delete(`${BASE_URL}/photos/${mid}`))
+          markedForDelete.map((mid) =>
+            axios.delete(`${BASE_URL}/photos/${mid}`)
+          )
         );
       }
 
       // 2) Build FormData for claim fields + new files (no need to send media_to_delete_json now)
       const fd = new FormData();
 
-      if (form.date_of_incident) fd.append("date_of_incident", form.date_of_incident);
+      if (form.date_of_incident)
+        fd.append("date_of_incident", form.date_of_incident);
       const t = toTimeHMS(form.incident_time);
       if (t) fd.append("incident_time", t);
 
@@ -217,12 +234,16 @@ export default function ClaimDetail() {
       newFiles.forEach((f) => {
         const rawExt = f.file.type?.split("/")[1] || "";
         const ext = rawExt.replace(/[^a-z0-9]/gi, "") || "jpg";
-        const suggested = `${id}/${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}.${ext}`;
+        const suggested = `${id}/${
+          crypto.randomUUID?.() || Math.random().toString(36).slice(2)
+        }.${ext}`;
         fd.append("new_files", f.file, suggested);
       });
 
       // Keep counts aligned: 1 description per file
-      newFiles.forEach((f) => fd.append("new_descriptions", f.description || ""));
+      newFiles.forEach((f) =>
+        fd.append("new_descriptions", f.description || "")
+      );
 
       // Let axios set multipart boundary
       await axios.put(`${BASE_URL}/claim/full_submission/${id}`, fd);
@@ -327,10 +348,22 @@ export default function ClaimDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm">
-                <p><span className="text-muted-foreground">Make:</span> {vehicle.make}</p>
-                <p><span className="text-muted-foreground">Model:</span> {vehicle.model}</p>
-                <p><span className="text-muted-foreground">Year:</span> {vehicle.year}</p>
-                <p><span className="text-muted-foreground">Reg No:</span> {vehicle.registration_number}</p>
+                <p>
+                  <span className="text-muted-foreground">Make:</span>{" "}
+                  {vehicle.make}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Model:</span>{" "}
+                  {vehicle.model}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Year:</span>{" "}
+                  {vehicle.year}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Reg No:</span>{" "}
+                  {vehicle.registration_number}
+                </p>
               </CardContent>
             </Card>
           )}
@@ -342,9 +375,18 @@ export default function ClaimDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm">
-              <p><span className="text-muted-foreground">Policy ID:</span> {claim.policy_id}</p>
-              <p><span className="text-muted-foreground">Customer ID:</span> {claim.customer_id}</p>
-              <p><span className="text-muted-foreground">Repair Shop:</span> {claim.repair_shop_id_done || "—"}</p>
+              <p>
+                <span className="text-muted-foreground">Policy ID:</span>{" "}
+                {claim.policy_id}
+              </p>
+              <p>
+                <span className="text-muted-foreground">Customer ID:</span>{" "}
+                {claim.customer_id}
+              </p>
+              <p>
+                <span className="text-muted-foreground">Repair Shop:</span>{" "}
+                {claim.repair_shop_id_done || "—"}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -359,9 +401,15 @@ export default function ClaimDetail() {
 
           {!editing ? (
             <CardContent className="grid sm:grid-cols-2 gap-4 text-sm">
-              <p><b>Date of Incident:</b> {fmt.date(claim.date_of_incident)}</p>
-              <p><b>Location:</b> {claim.incident_location}</p>
-              <p><b>Status:</b> {claim.status}</p>
+              <p>
+                <b>Date of Incident:</b> {fmt.date(claim.date_of_incident)}
+              </p>
+              <p>
+                <b>Location:</b> {claim.incident_location}
+              </p>
+              <p>
+                <b>Status:</b> {claim.status}
+              </p>
               <p className="sm:col-span-2">
                 <b>Description:</b> {claim.description || "—"}
               </p>
@@ -405,7 +453,12 @@ export default function ClaimDetail() {
             {media.map((m) => {
               const marked = markedForDelete.includes(m.media_id);
               return (
-                <Card key={m.media_id} className={`overflow-hidden border ${marked ? "opacity-60" : ""}`}>
+                <Card
+                  key={m.media_id}
+                  className={`overflow-hidden border ${
+                    marked ? "opacity-60" : ""
+                  }`}
+                >
                   <div className="flex flex-col md:flex-row gap-4 p-4">
                     <div className="relative w-full md:w-48 h-48">
                       <img
@@ -415,7 +468,9 @@ export default function ClaimDetail() {
                       />
                     </div>
                     <div className="flex-1 text-sm">
-                      <p><b>Description:</b> {m.description}</p>
+                      <p>
+                        <b>Description:</b> {m.description}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Uploaded: {fmt.datetime(m.uploaded_at)}
                       </p>
@@ -427,8 +482,33 @@ export default function ClaimDetail() {
                               type="checkbox"
                               checked={marked}
                               onChange={() => toggleDelete(m.media_id)}
+                              className="accent-primary"
                             />
-                            Mark to delete
+                            <span className="font-medium">Mark to delete</span>
+
+                            {/* Info icon + horizontal tooltip */}
+                            <div className="relative group flex items-center">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4 text-muted-foreground cursor-pointer"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
+                                />
+                              </svg>
+
+                              {/* Tooltip text to the right */}
+                              <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-popover text-popover-foreground text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap shadow-md border border-border">
+                                Tick this box and click <b>Save</b> to
+                                permanently delete this photo.
+                              </div>
+                            </div>
                           </label>
                         </div>
                       )}
@@ -449,7 +529,10 @@ export default function ClaimDetail() {
                     className="hidden"
                     onChange={onAddFiles}
                   />
-                  <label htmlFor="new-media" className="cursor-pointer font-medium">
+                  <label
+                    htmlFor="new-media"
+                    className="cursor-pointer font-medium"
+                  >
                     Click to add new images
                   </label>
                 </div>
